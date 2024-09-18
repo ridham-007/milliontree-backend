@@ -9,20 +9,23 @@ export class User {
   @Prop({ required: true })
   name: string;
 
-  @Prop({ required: true })
+  @Prop({ required: true, unique: true })
   email: string;
 
   @Prop()
-  cohort: string;
+  cohort?: string;
 
   @Prop()
-  datePlanted: Date;
+  datePlanted?: Date;
 
   @Prop()
-  location: string;
+  location?: string;
 
-  @Prop()
-  image: string;
+  @Prop({
+    day: { type: Number, enum: [1, 60, 90], required: true },
+    url: { type: String, required: true }
+  })
+  images: { day: number; url: string }[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
