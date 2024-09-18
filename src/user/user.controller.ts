@@ -12,9 +12,4 @@ export class UsersController {
   create(@Body() user: User) {
     return this.usersService.create(user);
   }
-
-  @Get()
-  findAll() {
-    return this.usersService.findAll();
-  }
 }

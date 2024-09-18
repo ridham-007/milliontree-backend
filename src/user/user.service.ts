@@ -8,12 +8,21 @@ import { User, UserDocument } from './user.schema';
 export class UsersService {
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
-  async create(user: User): Promise<User> {
+  async create(user: User): Promise<{ message: string, success: boolean, data?: User }> {
+    const { email } = user;
+    const isUserEmailIsAlreadyExist = await this.userModel.find({ email });
+    console.log({isUserEmailIsAlreadyExist});
+    
+    if (isUserEmailIsAlreadyExist?.length) {
+      return { message: "Email is already exist!", success: false }
+    }
     const newUser = new this.userModel(user);
-    return newUser.save();
-  }
+    const userSaved = await newUser.save();
 
-  async findAll(): Promise<User[]> {
-    return this.userModel.find().exec();
+    return {
+      message: 'User registered successfully!',
+      data: userSaved,
+      success: true
+    }
   }
 }
