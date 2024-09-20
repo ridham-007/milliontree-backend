@@ -4,6 +4,13 @@ import { Document } from 'mongoose';
 
 export type UserDocument = User & Document;
 
+
+interface Location {
+  name: string;
+  latitude: number;
+  longitude: number;
+}
+
 @Schema()
 export class User {
   @Prop({ required: true })
@@ -18,8 +25,14 @@ export class User {
   @Prop()
   datePlanted?: Date;
 
-  @Prop()
-  location?: string;
+  @Prop({
+    required: true, type: {
+      name: { type: String, required: true },
+      latitude: { type: Number, required: true },
+      longitude: { type: Number, required: true }
+    }
+  })
+  location?: Location;
 
   @Prop({
     day: { type: Number, enum: [1, 60, 90], required: true },

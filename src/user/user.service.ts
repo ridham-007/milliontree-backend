@@ -63,4 +63,47 @@ export class UsersService {
       return { message: 'Failed to update user.', success: false };
     }
   }
+
+  async getPlantedTrees(): Promise<{ message?: string; success: boolean; data?: any }> {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_EVERTREEN_URL}/tree-models`, {
+        method: "GET",
+        headers: {
+          'Content-Type': 'application/json',
+          "evertreen-user-apikey": process.env.NEXT_PUBLIC_EVERTREEN_API_KEY,
+        },
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Error: ${response.statusText}`);
+      }
+  
+      const { tree_models } = await response.json();
+  
+      const locations = await this.userModel.find({}, { location: 1, _id: 0 });
+  
+      let treeLocations: { name: string; location: { latitude: number; longitude: number } }[] = [];
+  
+      if (locations?.length) {
+        treeLocations = locations.map((location: any) => ({
+          name: location?.location?.name,
+          location: {
+            latitude: location?.location?.latitude,
+            longitude: location?.location?.longitude,
+          },
+        })).filter(loc => loc.name);
+      }
+  
+      const allPlantedTrees = [...tree_models, ...treeLocations];
+  
+      return {
+        data: allPlantedTrees,
+        success: true,
+      };
+    } catch (error) {
+      console.error(error);
+      return { message: 'Failed to fetch planted tree data', success: false };
+    }
+  }
+  
 }

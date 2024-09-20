@@ -18,4 +18,10 @@ export class UsersController {
   update(@Param() { id }, @Body() user: User) {
     return this.usersService.update(id, user);
   }
+
+  @Public()
+  @Get('/planted-trees')
+  getPlantedTrees() {
+    return this.usersService.getPlantedTrees();
+  }
 }
