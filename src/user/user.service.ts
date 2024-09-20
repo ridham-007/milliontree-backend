@@ -10,7 +10,7 @@ export class UsersService {
 
   async create(user: User): Promise<{ message: string, success: boolean, data?: User }> {
     try {
-      const eligibleDays = [1, 30, 60, 90]
+      const eligibleDays = [1, 60, 90]
       const { email, images } = user;
 
       const inValidKeys = images?.find((image: any) => !eligibleDays.includes(image.day));
@@ -59,18 +59,17 @@ export class UsersService {
     try {
       const user = await this.userModel.findOne({ email }).exec();
       if (!user) {
-        throw new NotFoundException(`User with email ${email} not found.`);
+        return { message: `User with email ${email} not found.`, success: false };
       }
-      return user;
+      return {user, success: true }
     } catch (error) {
       console.error("Error finding user by email:", error.message);
-      // return { message: `User with email ${email} not found.`, success: false };
     }
   }
 
   async update(id: string, user: any): Promise<{ message: string; success: boolean; data?: User }> {
     try {
-      const eligibleDays = [1, 30, 60, 90]
+      const eligibleDays = [1, 60, 90]
       const existingUser = await this.userModel.findById(id);
       if (!existingUser) {
         return { message: "User not found!", success: false };

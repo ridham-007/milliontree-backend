@@ -26,7 +26,7 @@ export class User {
   datePlanted?: Date;
 
   @Prop({
-    required: true, type: {
+    required: false, type: {
       name: { type: String, required: true },
       latitude: { type: Number, required: true },
       longitude: { type: Number, required: true }
