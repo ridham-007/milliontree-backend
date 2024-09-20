@@ -21,11 +21,14 @@ export class User {
   @Prop()
   location?: string;
 
+  @Prop({ default: null })
+  stripeCustomerId?: string;
+
   @Prop({
     day: { type: Number, enum: [1, 60, 90], required: true },
     url: { type: String, required: true }
   })
-  images: { day: number; url: string }[];
+  images?: { day: number; url: string }[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
