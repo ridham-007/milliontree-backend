@@ -126,8 +126,23 @@ export class UsersService {
   
       const allPlantedTrees = [...tree_models, ...treeLocations];
   
+      const groupedTrees = allPlantedTrees.reduce((acc, tree) => {
+        const { latitude, longitude } = tree.location;
+        const key = `${latitude},${longitude}`;
+  
+        if (!acc[key]) {
+          acc[key] = { location: { latitude, longitude }, trees: [] };
+        }
+  
+        acc[key].trees.push(tree?.name.trim().split('Trees in ')[1]);
+  
+        return acc;
+      }, {} as Record<string, { location: { latitude: number; longitude: number }; trees: string[] }>);
+  
+      const groupedArray = Object.values(groupedTrees);
+  
       return {
-        data: allPlantedTrees,
+        data: groupedArray,
         success: true,
       };
     } catch (error) {
@@ -135,5 +150,6 @@ export class UsersService {
       return { message: 'Failed to fetch planted tree data', success: false };
     }
   }
+  
   
 }
