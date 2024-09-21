@@ -18,12 +18,6 @@ export class UsersService {
         return { message: 'Day is not valid.', success: false };
       }
 
-      const isUserEmailIsAlreadyExist = await this.userModel.find({ email });
-
-      if (isUserEmailIsAlreadyExist?.length) {
-        return { message: "Email is already exist!", success: false };
-      }
-
       const newUser = new this.userModel(user);
       const userSaved = await newUser.save();
 
@@ -57,7 +51,7 @@ export class UsersService {
 
   async findByEmail(email: string): Promise<any> {
     try {
-      const user = await this.userModel.findOne({ email }).exec();
+      const user = await this.userModel.find({ email }).exec();
       if (!user) {
         return { message: `User with email ${email} not found.`, success: false };
       }
