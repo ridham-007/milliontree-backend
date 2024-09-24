@@ -6,6 +6,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './user/user.module';
 import { StripeModule } from './stripe/stripe.module';
+import { EventModule } from './event/event.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { StripeModule } from './stripe/stripe.module';
     MongooseModule.forRoot(process.env.MONGODB_URI),
     UsersModule,
     StripeModule,
+    EventModule
   ],
   providers: [AppService],
   controllers: [AppController],
