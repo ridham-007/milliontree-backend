@@ -1,6 +1,6 @@
 // src/users/user.schema.ts
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Schema as MongooseSchema  } from 'mongoose';
 export type UserDocument = User & Document;
 
 interface Location {
@@ -11,11 +11,25 @@ interface Location {
 
 @Schema()
 export class User {
-  @Prop({ required: true })
-  name: string;
+  _id?: MongooseSchema.Types.ObjectId;
 
-  @Prop({ required: true })
+  @Prop()
+  fName: string;
+
+  @Prop()
+  lName: string;
+
+  @Prop({ unique: true })
   email: string;
+
+  @Prop()
+  password: string;
+
+  // @Prop({ required: true })
+  // name: string;
+
+  // @Prop({ required: true })
+  // email: string;
 
   @Prop()
   cohort?: string;
@@ -25,9 +39,9 @@ export class User {
 
   @Prop({
     required: false, type: {
-      name: { type: String, required: true },
-      latitude: { type: Number, required: true },
-      longitude: { type: Number, required: true }
+      name: { type: String, required: false },
+      latitude: { type: Number, required: false },
+      longitude: { type: Number, required: false }
     }
   })
   location?: Location;
@@ -36,8 +50,8 @@ export class User {
   stripeCustomerId?: string;
 
   @Prop({
-    day: { type: Number, enum: [1, 60, 90], required: true },
-    url: { type: String, required: true }
+    day: { type: Number, enum: [1, 60, 90], required: false },
+    url: { type: String, required: false }
   })
   images?: { day: number; url: string }[];
 }

@@ -50,7 +50,7 @@ export class StripeService {
 
     let stripeCustomer = user.stripeCustomerId;
     if (!stripeCustomer) {
-      const customer = await this.createCustomer(`${user.name}`, user.email);
+      const customer = await this.createCustomer(`${user.fName} + ${user.lName}`, user.email);
       user.stripeCustomerId = customer?.id;
       await user.save();
   

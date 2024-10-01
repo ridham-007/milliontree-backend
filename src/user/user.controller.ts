@@ -41,4 +41,18 @@ export class UsersController {
   getUserByEmail(@Param('email') email: string) {
   return this.usersService.findByEmail(email);
 }
+
+ @Public()
+ @Post('login')
+ async login(@Body() userDto: any) {
+   return this.usersService.login(userDto);
+   
+ }
+
+ 
+ @Public()
+ @Post('signup')
+ async signUp(@Body() userDto: any) {
+   return this.usersService.signUp(userDto);
+ }
 }
