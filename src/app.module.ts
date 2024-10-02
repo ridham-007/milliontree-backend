@@ -9,6 +9,7 @@ import { StripeModule } from './stripe/stripe.module';
 import { EventModule } from './event/event.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
+import { TreeModule } from './tree/tree.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { JwtModule } from '@nestjs/jwt';
       inject: [ConfigService],
     }),
     AuthModule,
+    TreeModule,
     UsersModule,
     StripeModule,
     EventModule

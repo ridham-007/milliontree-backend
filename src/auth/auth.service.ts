@@ -32,7 +32,6 @@ export class AuthService {
 
   async signUp(userDto: any): Promise<any> {
     const { user, success, message } = await this.usersService.signUp(userDto);
-    console.log({user},'sadfasd');
     
     if (user) {
       const payload = { id: user.id, name: user.firstName, email: user.email };
