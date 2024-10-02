@@ -31,8 +31,9 @@ export class TreeController {
     return this.treeService.getPlantedTrees();
   }
   
+  @Public()
   @Get('/:id')
-  getUserById(@Param('id') id: string) {
-    return this.treeService.findById(id);
+  getTreeByUserId(@Param('id') id: string) {
+    return this.treeService.findByUserId(id);
   }
 }
