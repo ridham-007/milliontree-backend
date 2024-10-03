@@ -46,7 +46,7 @@ export class UsersService {
   }
   
   async signUp(userDto: any): Promise<any> {
-    const { fName, lName, email, password } = userDto;
+    const { fName, lName, email, userRole, password } = userDto;
    
     const userDetails = await this.userModel.findOne({ email }).exec();
     if (userDetails) {
@@ -61,6 +61,7 @@ export class UsersService {
       fName,
       lName,
       email,
+      userRole,
       password: hashedPassword,
     });
 

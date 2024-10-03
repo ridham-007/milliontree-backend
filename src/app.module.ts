@@ -10,6 +10,7 @@ import { EventModule } from './event/event.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
 import { TreeModule } from './tree/tree.module';
+import { BlogModule } from './blog/blog.module';
 
 @Module({
   imports: [
@@ -30,7 +31,8 @@ import { TreeModule } from './tree/tree.module';
     TreeModule,
     UsersModule,
     StripeModule,
-    EventModule
+    EventModule,
+    BlogModule
   ],
   providers: [AppService],
   controllers: [AppController],

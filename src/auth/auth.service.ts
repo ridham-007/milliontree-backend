@@ -15,12 +15,13 @@ export class AuthService {
     const { user, success, message } = await this.usersService.login(userDto);
     if (user) {
       const payload = { id: user._id, name: user.fName + user.lName };
-      return {
+      const data = {
         user,
         success,
         message,
-        accessToken: await this.jwtService.signAsync(payload),
-      };
+        accessToken: await this.jwtService.signAsync(payload),}
+
+      return data;
     } else {
       return {
         user,
@@ -35,12 +36,13 @@ export class AuthService {
     
     if (user) {
       const payload = { id: user.id, name: user.firstName, email: user.email };
-      return {
+      const data = {
         accessToken: await this.jwtService.signAsync(payload),
         user,
         success,
         message,
       };
+      return data
     } else {
       return {
         user,

@@ -20,6 +20,9 @@ export class User {
 
   @Prop({ default: null })
   stripeCustomerId?: string;
+
+  @Prop({ default: null })
+  userRole?: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
