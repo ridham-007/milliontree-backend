@@ -15,6 +15,15 @@ export class Event {
 
   @Prop({ type: [String], required: false })
   images?: string[];
+
+  @Prop({ required: true })
+  latitude: string;
+
+  @Prop({ required: true })
+  longitude: string;
+
+  @Prop({ required: true })
+  startDate?: Date;
 }
 
 export const EventSchema = SchemaFactory.createForClass(Event);
