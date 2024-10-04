@@ -26,7 +26,7 @@ export class Event {
   startDate?: Date;
 
   @Prop({ required: false })
-  placeId: string;
+  placeId?: string;
 }
 
 export const EventSchema = SchemaFactory.createForClass(Event);
