@@ -24,6 +24,9 @@ export class Event {
 
   @Prop({ required: true })
   startDate?: Date;
+
+  @Prop({ required: false })
+  placeId: string;
 }
 
 export const EventSchema = SchemaFactory.createForClass(Event);
