@@ -106,26 +106,43 @@ async getUpcomingEventsGroupedByMonth(): Promise<any> {
     .sort({ startDate: -1 })
     .exec();
 
-  return this.groupEventsByMonth(events);
+  return this.groupEventsByYearAndMonth(events);
 }
 
-private groupEventsByMonth(events: Event[]): Record<string, Event[]> {
+private groupEventsByYearAndMonth(events: Event[]): any[] {
   const months = [
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December',
   ];
 
-  const groupedEvents = months.reduce((acc, month) => {
-    acc[month] = [];
-    return acc;
-  }, {} as Record<string, Event[]>);
+  const groupedEvents: Record<string, Record<string, Event[]>> = {};
 
   events.forEach(event => {
-    const month = months[new Date(event.startDate).getMonth()];
-    groupedEvents[month].push(event);
+    const eventDate = new Date(event.startDate);
+    const year = eventDate.getFullYear().toString();
+    const month = months[eventDate.getMonth()];
+
+    if (!groupedEvents[year]) {
+      groupedEvents[year] = {};
+    }
+
+    if (!groupedEvents[year][month]) {
+      groupedEvents[year][month] = [];
+    }
+
+    groupedEvents[year][month].push(event);
   });
 
-  return groupedEvents;
+  // Convert the grouped events into the desired output format
+  const result: any[] = Object.entries(groupedEvents).map(([year, monthsObj]) => ({
+    year,
+    months: Object.entries(monthsObj).map(([month, events]) => ({
+      month,
+      events,
+    })),
+  }));
+
+  return result;
 }
 
   async getCompletedEventsGroupedByMonth(): Promise<any> {
@@ -134,7 +151,7 @@ private groupEventsByMonth(events: Event[]): Record<string, Event[]> {
       .find({ startDate: { $lt: currentDate } })
       .sort({ startDate: -1 })
       .exec();
-    return this.groupEventsByMonth(events)
+    return this.groupEventsByYearAndMonth(events)
   }
 
   async getEventsGroupedByMonth(): Promise<any> {
@@ -156,8 +173,8 @@ private groupEventsByMonth(events: Event[]): Record<string, Event[]> {
     const [upcomingEvents, completedEvents] = await Promise.all([upcomingEventsPromise, completedEventsPromise]);
   
     // Group events by month
-    const upcomingGroupedByMonth = this.groupEventsByMonth(upcomingEvents);
-    const completedGroupedByMonth = this.groupEventsByMonth(completedEvents);
+    const upcomingGroupedByMonth = this.groupEventsByYearAndMonth(upcomingEvents);
+    const completedGroupedByMonth = this.groupEventsByYearAndMonth(completedEvents);
   
     // Combine both into a single response
     return {
