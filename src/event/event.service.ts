@@ -165,4 +165,13 @@ private groupEventsByMonth(events: Event[]): Record<string, Event[]> {
       completed: completedGroupedByMonth,
     };
   }
+
+  async getAllEvents(): Promise<any> {
+    const events = await this.eventModel
+      .find() // Fetches all events without filtering
+      .sort({ startDate: -1 }) // Sort by start date (latest first)
+      .exec();
+  
+    return events;
+  }
 }

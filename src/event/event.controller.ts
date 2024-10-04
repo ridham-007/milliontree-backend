@@ -147,4 +147,20 @@ export class EventController {
       return { data: null, success: false, message: error.message };
     }
   }
+
+  @Public()
+  @Get('all-events')
+  async getAllEvents(): Promise<any> {
+    try {
+      const allEvents =
+        await this.eventService.getAllEvents();
+      return {
+        data: allEvents,
+        success: true,
+        message: 'All events fetched successfully',
+      };
+    } catch (error) {
+      return { data: null, success: false, message: error.message };
+    }
+  }
 }
