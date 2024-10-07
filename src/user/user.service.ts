@@ -71,4 +71,29 @@ export class UsersService {
       user: await user.save(),
     };
   }
+
+  async getUsers(
+    page: number,
+    limit: number,
+  ): Promise<{ users: User[]; total: number }> {
+    const skip = (page - 1) * limit;
+    const users = await this.userModel.find().skip(skip).limit(limit).exec();
+    const total = await this.userModel.countDocuments().exec();
+    return { users, total };
+  }
+
+  async updateUser(id: string, updateUserDto: any): Promise<any> {
+    
+    const updatedUser = await this.userModel.findByIdAndUpdate(
+      id,
+      { $set: updateUserDto },
+      { new: true }
+    ).exec();
+
+    if (!updatedUser) {
+      throw new Error('User not found');
+    }
+
+    return updatedUser;
+  }
 }
