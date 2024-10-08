@@ -4,10 +4,15 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { User, UserDocument } from './user.schema';
+import { sendMail } from 'src/utils/email';
 
 @Injectable()
 export class UsersService {
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) { }
+
+  async generateResetCode() {
+    return Math.floor(1000 + Math.random() * 9000).toString();
+  }
   
   async login(userDto: any): Promise<any> {
     const { email, password } = userDto;
@@ -96,4 +101,70 @@ export class UsersService {
 
     return updatedUser;
   }
+
+async forgotPassword(email: string): Promise<any> {
+  const userDetails = await this.userModel.findOne({ email }).exec();
+  if (!userDetails) {
+    throw new Error('User not found.');
+  }
+
+  const resetCode = await this.generateResetCode();
+  const emailBody = `Your password reset code is: ${resetCode}`;
+  const emailSubject = 'Password Reset Request';
+  userDetails.resetCode = resetCode;
+  userDetails.resetCodeExpires = Date.now() + 5 * 60 * 1000;
+  await userDetails.save();
+
+  return await sendMail(email, emailBody, emailSubject);
+}
+
+async resetPassword(email: string, newPassword: string): Promise<any> {
+  const userDetails = await this.userModel.findOne({ email }).exec();
+
+  if (!userDetails) {
+    throw new Error('User not found.');
+  }
+
+  userDetails.password = await bcrypt.hash(newPassword, 10);
+  userDetails.resetCode = null;
+  userDetails.resetCodeExpires = null;
+  await userDetails.save();
+}
+
+async resendCode(email: string): Promise<any> {
+  const userDetails = await this.userModel.findOne({ email }).exec();
+
+  if (!userDetails) {
+    throw new Error('User not found.');
+  }
+
+  const resetCode = await this.generateResetCode();
+  const emailBody = `Your password reset code is: ${resetCode}`;
+  const emailSubject = 'Password Reset Request';
+
+  userDetails.resetCode = resetCode;
+  userDetails.resetCodeExpires = Date.now() + 5 * 60 * 1000;
+  await userDetails.save();
+
+  return await sendMail(email, emailBody, emailSubject);
+}
+
+async validateResetCode(email: string, code: string): Promise<any> {
+  const userDetails = await this.userModel.findOne({ email }).exec();
+
+  if (!userDetails) {
+    throw new Error('User not found.');
+  }
+
+  if (userDetails.resetCode !== code) {
+    throw new Error('Invalid reset code.');
+  }
+
+  if (userDetails.resetCodeExpires < Date.now()) {
+    throw new Error('Reset code has expired.');
+  }
+
+  return true;
+}
+
 }

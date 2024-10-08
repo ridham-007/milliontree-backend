@@ -23,6 +23,13 @@ export class User {
 
   @Prop({ default: null })
   userRole?: string;
+
+  @Prop({ default: null })
+  resetCode: string;
+
+  @Prop({ default: null })
+  resetCodeExpires: number;
+
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

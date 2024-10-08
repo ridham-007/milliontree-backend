@@ -54,4 +54,82 @@ export class UsersController {
       return { success: false, message: error.message };
     }
   }
+
+  @Public()
+  @Post('forgot-password')
+  async forgotPassword(@Body('email') email: string) {
+    try {
+      const result = await this.usersService.forgotPassword(email);
+      return {
+        data: result,
+        success: true,
+        message: 'Code sent successfully.',
+      };
+    } catch (error) {
+      return {
+        data: null,
+        success: false,
+        message: error.message,
+      };
+    }
+  }
+
+  @Public()
+  @Post('reset-password')
+  async resetPassword(@Body() data: any) {
+    const { email, newPassword } = data;
+    try {
+      const result = await this.usersService.resetPassword(email, newPassword);
+      return {
+        data: result,
+        success: true,
+        message: 'Password reset successfully',
+      };
+    } catch (error) {
+      return {
+        data: null,
+        success: false,
+        message: error.message,
+      };
+    }
+  }
+
+  @Public()
+  @Post('resend-code')
+  async resetCode(@Body('email') email: string) {
+    try {
+      const result = await this.usersService.resendCode(email);
+      return {
+        data: result,
+        success: true,
+        message: 'Code sent successfully.',
+      };
+    } catch (error) {
+      return {
+        data: null,
+        success: false,
+        message: error.message,
+      };
+    }
+  }
+  
+  @Public()
+  @Post('validate-reset-code')
+  async validateResetCode(@Body() data: any) {
+    const { email, code } = data;
+    try {
+      const result = await this.usersService.validateResetCode(email, code);
+      return {
+        data: result,
+        success: true,
+        message: 'Code validate.',
+      };
+    } catch (error) {
+      return {
+        data: null,
+        success: false,
+        message: error.message,
+      };
+    }
+  }
 }
