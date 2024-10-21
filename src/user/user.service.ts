@@ -4,19 +4,19 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { User, UserDocument } from './user.schema';
-import { sendMail } from 'src/utils/email';
+import { sendMail, sendUserRegistrationMail } from 'src/utils/email';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) { }
+  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
   async generateResetCode() {
     return Math.floor(1000 + Math.random() * 9000).toString();
   }
-  
+
   async login(userDto: any): Promise<any> {
     const { email, password } = userDto;
-  
+
     const userDetails = await this.userModel.findOne({ email }).lean().exec();
     if (!userDetails) {
       return {
@@ -24,7 +24,7 @@ export class UsersService {
         message: 'User not found',
       };
     }
-  
+
     if (userDetails.password?.length) {
       const isPasswordValid = await bcrypt.compare(
         password,
@@ -49,19 +49,20 @@ export class UsersService {
       };
     }
   }
-  
+
   async signUp(userDto: any): Promise<any> {
     const { fName, lName, email, userRole, password } = userDto;
-   
-    const userDetails = await this.userModel.findOne({ email }).exec();
+    const userDetails = await this.userModel.findOne({ email }).lean().exec();
+
     if (userDetails) {
       return {
         success: false,
         message: 'User already registered',
       };
     }
-  
+
     const hashedPassword = await bcrypt.hash(password, 10);
+
     const user = new this.userModel({
       fName,
       lName,
@@ -70,8 +71,13 @@ export class UsersService {
       password: hashedPassword,
     });
 
+    await sendUserRegistrationMail({
+      send_to: email,
+      userName: fName + '' + lName,
+    });
+
     return {
-      success: true, 
+      success: true,
       message: 'Registered successfully.',
       user: await user.save(),
     };
@@ -88,12 +94,9 @@ export class UsersService {
   }
 
   async updateUser(id: string, updateUserDto: any): Promise<any> {
-    
-    const updatedUser = await this.userModel.findByIdAndUpdate(
-      id,
-      { $set: updateUserDto },
-      { new: true }
-    ).exec();
+    const updatedUser = await this.userModel
+      .findByIdAndUpdate(id, { $set: updateUserDto }, { new: true })
+      .exec();
 
     if (!updatedUser) {
       throw new Error('User not found');
@@ -102,69 +105,68 @@ export class UsersService {
     return updatedUser;
   }
 
-async forgotPassword(email: string): Promise<any> {
-  const userDetails = await this.userModel.findOne({ email }).exec();
-  if (!userDetails) {
-    throw new Error('User not found.');
+  async forgotPassword(email: string): Promise<any> {
+    const userDetails = await this.userModel.findOne({ email }).exec();
+    if (!userDetails) {
+      throw new Error('User not found.');
+    }
+
+    const resetCode = await this.generateResetCode();
+    const emailBody = `Your password reset code is: ${resetCode}`;
+    const emailSubject = 'Password Reset Request';
+    userDetails.resetCode = resetCode;
+    userDetails.resetCodeExpires = Date.now() + 5 * 60 * 1000;
+    await userDetails.save();
+
+    return await sendMail(email, emailBody, emailSubject);
   }
 
-  const resetCode = await this.generateResetCode();
-  const emailBody = `Your password reset code is: ${resetCode}`;
-  const emailSubject = 'Password Reset Request';
-  userDetails.resetCode = resetCode;
-  userDetails.resetCodeExpires = Date.now() + 5 * 60 * 1000;
-  await userDetails.save();
+  async resetPassword(email: string, newPassword: string): Promise<any> {
+    const userDetails = await this.userModel.findOne({ email }).exec();
 
-  return await sendMail(email, emailBody, emailSubject);
-}
+    if (!userDetails) {
+      throw new Error('User not found.');
+    }
 
-async resetPassword(email: string, newPassword: string): Promise<any> {
-  const userDetails = await this.userModel.findOne({ email }).exec();
-
-  if (!userDetails) {
-    throw new Error('User not found.');
+    userDetails.password = await bcrypt.hash(newPassword, 10);
+    userDetails.resetCode = null;
+    userDetails.resetCodeExpires = null;
+    await userDetails.save();
   }
 
-  userDetails.password = await bcrypt.hash(newPassword, 10);
-  userDetails.resetCode = null;
-  userDetails.resetCodeExpires = null;
-  await userDetails.save();
-}
+  async resendCode(email: string): Promise<any> {
+    const userDetails = await this.userModel.findOne({ email }).exec();
 
-async resendCode(email: string): Promise<any> {
-  const userDetails = await this.userModel.findOne({ email }).exec();
+    if (!userDetails) {
+      throw new Error('User not found.');
+    }
 
-  if (!userDetails) {
-    throw new Error('User not found.');
+    const resetCode = await this.generateResetCode();
+    const emailBody = `Your password reset code is: ${resetCode}`;
+    const emailSubject = 'Password Reset Request';
+
+    userDetails.resetCode = resetCode;
+    userDetails.resetCodeExpires = Date.now() + 5 * 60 * 1000;
+    await userDetails.save();
+
+    return await sendMail(email, emailBody, emailSubject);
   }
 
-  const resetCode = await this.generateResetCode();
-  const emailBody = `Your password reset code is: ${resetCode}`;
-  const emailSubject = 'Password Reset Request';
+  async validateResetCode(email: string, code: string): Promise<any> {
+    const userDetails = await this.userModel.findOne({ email }).exec();
 
-  userDetails.resetCode = resetCode;
-  userDetails.resetCodeExpires = Date.now() + 5 * 60 * 1000;
-  await userDetails.save();
+    if (!userDetails) {
+      throw new Error('User not found.');
+    }
 
-  return await sendMail(email, emailBody, emailSubject);
-}
+    if (userDetails.resetCode !== code) {
+      throw new Error('Invalid reset code.');
+    }
 
-async validateResetCode(email: string, code: string): Promise<any> {
-  const userDetails = await this.userModel.findOne({ email }).exec();
+    if (userDetails.resetCodeExpires < Date.now()) {
+      throw new Error('Reset code has expired.');
+    }
 
-  if (!userDetails) {
-    throw new Error('User not found.');
+    return true;
   }
-
-  if (userDetails.resetCode !== code) {
-    throw new Error('Invalid reset code.');
-  }
-
-  if (userDetails.resetCodeExpires < Date.now()) {
-    throw new Error('Reset code has expired.');
-  }
-
-  return true;
-}
-
 }
