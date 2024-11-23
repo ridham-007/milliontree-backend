@@ -80,12 +80,16 @@ export class BlogService {
     const total = await this.blogModel.countDocuments().exec();
     
     // Fetch the paginated blog documents
-    const blogs = await this.blogModel
-      .find()
-      .skip(skip)
-      .limit(limit)
-      .exec();
-  
+    let blogs;
+    if (query.status) {
+      blogs = await this.blogModel
+        .find({ status: true })
+        .skip(skip)
+        .limit(limit)
+        .exec();
+    } else {
+      blogs = await this.blogModel.find().skip(skip).limit(limit).exec();
+    }
     // Return pagination details along with the blogs
     return {
       total,
